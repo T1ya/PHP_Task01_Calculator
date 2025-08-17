@@ -1,3 +1,4 @@
+<?php session_start()?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,10 +11,11 @@
     <section class="result">
     <?php
         require_once "functions.php";
+
         if ($_POST) {
-            $a      = $_POST["firstNum"];
-            $b      = $_POST["secondNum"];
-            $action = $_POST["action"];
+            $a      = $_POST["firstNum"] ?? null;
+            $b      = $_POST["secondNum"] ?? null;
+            $action = $_POST["action"] ?? null;
 
             $status = validate($a, $b, $action);
             $result = match ($status) {
@@ -23,10 +25,26 @@
                 Status::ACTION_E => "Error - wrong action",
                 Status::ZERO_E => "Error - division by 0",
             };
+            $class = ($status == Status::OK ? 'success' : 'error');
             echo "<p>" . htmlspecialchars("$a $action $b") . " =</p>";
-            echo "<p class=" . ($status == Status::OK ? 'success' : 'error') . ">" . htmlspecialchars($result) . "</p>";
+            echo "<h1 class=$class>" . htmlspecialchars($result) . "</h1>";
+            $_SESSION['history'][] = "<span class=$class>$a $action $b = $result<span>";
         }
     ?>
     </section>
+    <form action = "index.php">
+    <section class="result log">
+        <ul>
+        <?php
+            if (! empty($_SESSION['history'])) {
+                foreach ($_SESSION['history'] as $key => $value) {
+                    echo "<li>$key) $value</li>";
+                }
+            }
+        ?>
+        </ul>
+        <button type="submit">Back</button>
+        </section>
+        </form>
 </body>
 </html>
